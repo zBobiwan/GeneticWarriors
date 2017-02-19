@@ -13,7 +13,7 @@ public class ChararcterGui : MonoBehaviour
     public int Id;
     public Text Average;
 
-    public void Refresh(MainGui gui, GameEngine.Guy guy)
+    public void Refresh(MainGui gui, GameEngine.Guy guy, GameEngine.Guy current)
     {
         Gui = gui;
         Guy = guy;
@@ -22,7 +22,15 @@ public class ChararcterGui : MonoBehaviour
         {
             Id = guy.Id;
             Name.text = guy.FamillyName + ":" + Id;
-            this.GetComponent<Image>().color = guy.Man ? gui.GameColors.Man : gui.GameColors.Woman;
+            if (guy != current)
+            {
+                this.GetComponent<Image>().color = guy.Man ? gui.GameColors.Man : gui.GameColors.Woman;
+            }
+            else
+            {
+                this.GetComponent<Image>().color = guy.Man ? gui.GameColors.SelectedMan : gui.GameColors.SelectedWoman;
+            }
+            
             Average.text = guy.Average.ToString("F1");
         }
         else

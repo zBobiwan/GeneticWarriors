@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +11,11 @@ public class MainGui : MonoBehaviour
     public class Colors
     {
         public Color Man;
+        public Color SelectedMan;
+
         public Color Woman;
+        public Color SelectedWoman;
+
         public Color Best;
         public Color Worst;
 
@@ -37,7 +42,11 @@ public class MainGui : MonoBehaviour
     public GameEngine.Guy Guy;
     public Button[] Tabs;
     public GameObject Parent;
+    public Image ParentBar;
+    
     public GameObject Champion;
+    public Image ChampionBar;
+
     public GameObject House;
     public GameObject Nurcery;
     public GameObject Detail;
@@ -56,57 +65,51 @@ public class MainGui : MonoBehaviour
     public Button PromoteHouse;
     public Button Sacrifice;
 
+    public ResourceGui[] Resources;
+
     public void Init(GameEngine engine)
     {
         Engine = engine;
     }
 
+    public void Update()
+    {
+        GameEngine.House house = Engine.Houses[HouseIndex];
+        ParentBar.fillAmount = (float)house.BirthCounter / (float)house.BirthTime;
+        ChampionBar.fillAmount = (float)house.ChampionCounter / (float)house.ChampionActionTime;
+        Refresh();
+        if (house.Changed)
+        {
+            Refresh();
+            house.Changed = false;
+        }
+    }
+
     public void Refresh()
     {
         GameEngine.House house = Engine.Houses[HouseIndex];
-        for (int index = 0; index < Tabs.Length; index++)
+        RefreshHouses();
+        RefreshResources();
+        RefreshHouses(house);
+        RefreshParent(house);
+        RefreshNurcery(house);
+        RefreshHouses(house);
+        RefreshDetail(house);
+    }
+
+    private void RefreshResources()
+    {
+        for (int index = 0; index < Engine.Resources.Count; index++)
         {
-            Button button = Tabs[index];
-            if (index < Engine.Houses.Count)
-            {
-                button.GetComponentInChildren<Text>().text = Engine.Houses[index].Name;
-            }
-
-            button.interactable = index != HouseIndex;
-            button.gameObject.SetActive(index < Engine.Houses.Count);
+            GameEngine.Resource resource = Engine.Resources[index];
+            Resources[index].Name.text = resource.Name;
+            Resources[index].Current.text = resource.Value.ToString();
+            Resources[index].Max.text = resource.Max.ToString();
         }
+    }
 
-        Dad.Refresh(this, house.Dad);
-        Mom.Refresh(this, house.Mom);
-        ChampionGuy.Refresh(this, house.Champion);
-        for (int index = 0; index < HouseGuys.Length; index++)
-        {
-            ChararcterGui guy = HouseGuys[index];
-            guy.gameObject.SetActive(index < house.HouseSize);
-            if (index < house.HouseGuys.Count)
-            {
-                guy.Refresh(this, house.HouseGuys[index]);
-            }
-            else
-            {
-                guy.Refresh(this, null);
-            }
-        }
-
-        for (int index = 0; index < NurceryGuys.Length; index++)
-        {
-            ChararcterGui guy = NurceryGuys[index];
-            guy.gameObject.SetActive(index < house.NurcerySize);
-            if (index < house.Nurcery.Count)
-            {
-                guy.Refresh(this, house.Nurcery[index]);
-            }
-            else
-            {
-                guy.Refresh(this, null);
-            }
-        }
-
+    private void RefreshDetail(GameEngine.House house)
+    {
         Detail.SetActive(Guy != null && Guy.Id != 0);
         if (Guy != null && Guy.Id != 0)
         {
@@ -115,7 +118,7 @@ public class MainGui : MonoBehaviour
             GuyParent.text = Guy.Man ? "Dad" : "Mom";
             for (int i = 0; i < 8; i++)
             {
-                GameEngine.Charateristic parent = Guy.Man?house.Dad.Charateristics[i] : house.Mom.Charateristics[i];
+                GameEngine.Charateristic parent = Guy.Man ? house.Dad.Charateristics[i] : house.Mom.Charateristics[i];
                 GameEngine.Charateristic champion = house.Champion == null || house.Champion.Id == 0 ? null : house.Champion.Charateristics[i];
 
                 Charateristics[i].SetValue(this, Guy.Charateristics[i], parent, champion);
@@ -125,7 +128,75 @@ public class MainGui : MonoBehaviour
             PromoteChampion.interactable = Guy != house.Dad && Guy != house.Mom && Guy != house.Champion;
             PromoteParent.GetComponentInChildren<Text>().text = Guy.Man ? "Promote Dad" : "Promote Mom";
             Sacrifice.interactable = Guy != house.Dad && Guy != house.Mom && Guy != house.Champion;
-            PromoteHouse.interactable = Guy != house.Dad && Guy != house.Mom && Guy != house.Champion && house.HouseGuys.Count < house.HouseSize && house.Nurcery.Contains(Guy); 
+            PromoteHouse.interactable = Guy != house.Dad && Guy != house.Mom && Guy != house.Champion && house.HouseGuys.Count < house.HouseSize && house.Nurcery.Contains(Guy);
+        }
+    }
+
+    private void RefreshNurcery(GameEngine.House house)
+    {
+        for (int index = 0; index < NurceryGuys.Length; index++)
+        {
+            ChararcterGui guy = NurceryGuys[index];
+            guy.gameObject.SetActive(index < house.NurcerySize);
+            if (index < house.Nurcery.Count)
+            {
+                guy.Refresh(this, house.Nurcery[index], Guy);
+            }
+            else
+            {
+                guy.Refresh(this, null, Guy);
+            }
+        }
+    }
+
+    private void RefreshParent(GameEngine.House house)
+    {
+        Dad.Refresh(this, house.Dad, Guy);
+        Mom.Refresh(this, house.Mom, Guy);
+
+        ChampionGuy.Refresh(this, house.Champion, Guy);
+        
+    }
+
+    private void RefreshHouses(GameEngine.House house)
+    {
+        for (int index = 0; index < HouseGuys.Length; index++)
+        {
+            ChararcterGui guy = HouseGuys[index];
+            guy.gameObject.SetActive(index < house.HouseSize);
+            if (index < house.HouseGuys.Count)
+            {
+                guy.Refresh(this, house.HouseGuys[index], Guy);
+            }
+            else
+            {
+                guy.Refresh(this, null, Guy);
+            }
+        }
+    }
+
+    private void RefreshHouses()
+    {
+        
+        for (int index = 0; index < Tabs.Length; index++)
+        {
+            Button button = Tabs[index];
+            if (index < Engine.Houses.Count)
+            {
+                button.GetComponentInChildren<Text>().text = Engine.Houses[index].Name;
+                button.interactable = index != HouseIndex;
+                button.gameObject.SetActive(true);
+            }
+            else if (index == Engine.Houses.Count && index != 7)
+            {
+                button.GetComponentInChildren<Text>().text = "Buy for "+index*60+" Gold";
+                button.interactable = Engine.Resources.First(x => x.Name == "Gold").Value >= 60; 
+                button.gameObject.SetActive(true);
+            }
+            else
+            {
+                button.gameObject.SetActive(false);
+            }
         }
     }
 
@@ -166,5 +237,15 @@ public class MainGui : MonoBehaviour
     {
         Engine.NewGeneration(HouseIndex);
         Refresh();
+    }
+
+    public void HouseClicked(int index)
+    {
+        if (Engine.Houses.Count == index)
+        {
+            Engine.CreateNextHouse();
+        }
+
+        HouseIndex = index;
     }
 }
