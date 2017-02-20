@@ -42,14 +42,14 @@ public class GameEngine : MonoBehaviour
             maxGold += house.GetMaxGold();
         }
 
-        Resources.First(x => x.Name == "Gold").Max = maxGold;
+        GetResource(Resource.RessourceType.Gold).Max = maxGold;
 
     }
 
     public void Init()
     {
-       Houses.Add(new House("Training", "Bob"));
-       Resources.Add(new Resource("Gold"));
+       Houses.Add(new House(House.HouseType.Training.ToString(), "Bob"));
+       Resources.Add(new Resource(Resource.RessourceType.Gold));
     }
 
     public void NewGeneration(int houseIndex)
@@ -59,9 +59,26 @@ public class GameEngine : MonoBehaviour
 
     }
 
+    public Resource GetResource(Resource.RessourceType type)
+    {
+        return Resources.First(x => x.Type == type);
+    }
+
     [Serializable]
     public class House
     {
+        public enum HouseType
+        {
+            Training,
+            Building,
+            Research,
+            Medecine,
+            Crafting,
+            Enconomy,
+            Farming,
+            Marketing
+        }
+
         public bool Changed;
         public Guy Dad;
         public Guy Mom;
@@ -149,9 +166,9 @@ public class GameEngine : MonoBehaviour
 
         private void DoChampionAction(GameEngine engine)
         {
-            if (Name == "Training")
+            if (Name == House.HouseType.Training.ToString())
             {
-                engine.Resources.First(x => x.Name == "Gold").Add(Champion.Charateristics.First(x => x.Name == "Strenght").Value / 10);
+                engine.GetResource(Resource.RessourceType.Gold).Add(Champion.GetCharateristic(Charateristic.Type.Strenght) / 10);
             }
         }
 
@@ -172,7 +189,11 @@ public class GameEngine : MonoBehaviour
             }
         }
 
-        public IEnumerable<Guy> GetMembers(bool addParent, bool addChampion, bool addHouse, bool addNurcery)
+        public IEnumerable<Guy> GetMembers(
+            bool addParent = false, 
+            bool addChampion=false, 
+            bool addHouse=false, 
+            bool addNurcery=false)
         {
             if (addParent && Mom != null && Mom.Id != 0)
             {
@@ -209,13 +230,8 @@ public class GameEngine : MonoBehaviour
 
         public int GetMaxGold()
         {
-            int maxGold = 0;
-            foreach (Guy guy in GetMembers(addParent: true, addChampion: true, addHouse: true, addNurcery: false))
-            {
-                maxGold += guy.Charateristics.First(x => x.Name == "Size").Value;
-            }
-            
-            return maxGold;
+            return GetMembers(addParent: true, addChampion: true, addHouse: true)
+                .Sum(x => x.GetCharateristic(Charateristic.Type.Strenght));
         }
     }
 
@@ -233,14 +249,14 @@ public class GameEngine : MonoBehaviour
             Man = man;
             Id = id;
             FamillyName = name;
-            Charateristics[0] = new Charateristic("Strenght", 10);
-            Charateristics[1] = new Charateristic("Size", 10);
-            Charateristics[2] = new Charateristic("Dexterity", 10);
-            Charateristics[3] = new Charateristic("Agility", 10);
-            Charateristics[4] = new Charateristic("Intelligence", 10);
-            Charateristics[5] = new Charateristic("Wits", 10);
-            Charateristics[6] = new Charateristic("Charisme", 10);
-            Charateristics[7] = new Charateristic("Mental", 10);
+            Charateristics[0] = new Charateristic(Charateristic.Type.Strenght, 10);
+            Charateristics[1] = new Charateristic(Charateristic.Type.Size, 10);
+            Charateristics[2] = new Charateristic(Charateristic.Type.Agility, 10);
+            Charateristics[3] = new Charateristic(Charateristic.Type.Dexterity, 10);
+            Charateristics[4] = new Charateristic(Charateristic.Type.Intelligence, 10);
+            Charateristics[5] = new Charateristic(Charateristic.Type.Wits, 10);
+            Charateristics[6] = new Charateristic(Charateristic.Type.Mental, 10);
+            Charateristics[7] = new Charateristic(Charateristic.Type.Mental, 10);
         }
 
         public double Average
@@ -250,17 +266,33 @@ public class GameEngine : MonoBehaviour
                 return Charateristics.Average(x => x.Value); 
             }
         }
+
+        public int GetCharateristic(Charateristic.Type type)
+        {
+            return Charateristics.First(x => x.CharateristicType == type).Value;
+        }
     }
 
     [Serializable]
     public class Charateristic
     {
-        public int Value;
-        public string Name;
-
-        public Charateristic(string name, int v)
+        public enum Type
         {
-            this.Name = name;
+            Strenght,
+            Size,
+            Agility,
+            Dexterity,
+            Intelligence,
+            Wits,
+            Mental,
+            Charisme
+        }
+        public int Value;
+        public Type CharateristicType;
+
+        public Charateristic(Type type, int v)
+        {
+            this.CharateristicType = type;
             this.Value = v;
         }
     }
@@ -268,13 +300,18 @@ public class GameEngine : MonoBehaviour
     [Serializable]
     public class Resource
     {
-        public string Name;
+        public enum RessourceType
+        {
+            Gold,
+        }
+
+        public RessourceType Type;
         public int Value;
         public int Max;
 
-        public Resource(string name)
+        public Resource(RessourceType type)
         {
-            Name = name;
+            Type = type;
         }
 
         public void Add(int value)
@@ -291,7 +328,7 @@ public class GameEngine : MonoBehaviour
     {
         if (Houses.Count == 1)
         {
-            Houses.Add(new House("Building", "Billy"));
+            Houses.Add(new House(House.HouseType.Building.ToString(), "Billy"));
         }
     }
 }

@@ -102,7 +102,7 @@ public class MainGui : MonoBehaviour
         for (int index = 0; index < Engine.Resources.Count; index++)
         {
             GameEngine.Resource resource = Engine.Resources[index];
-            Resources[index].Name.text = resource.Name;
+            Resources[index].Name.text = resource.Type.ToString();
             Resources[index].Current.text = resource.Value.ToString();
             Resources[index].Max.text = resource.Max.ToString();
         }
@@ -190,7 +190,7 @@ public class MainGui : MonoBehaviour
             else if (index == Engine.Houses.Count && index != 7)
             {
                 button.GetComponentInChildren<Text>().text = "Buy for "+index*60+" Gold";
-                button.interactable = Engine.Resources.First(x => x.Name == "Gold").Value >= 60; 
+                button.interactable = Engine.GetResource(GameEngine.Resource.RessourceType.Gold).Value >= 60; 
                 button.gameObject.SetActive(true);
             }
             else

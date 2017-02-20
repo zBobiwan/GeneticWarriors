@@ -13,7 +13,7 @@ public class CharateristicGui : MonoBehaviour
 
     public void SetValue(MainGui gui, GameEngine.Charateristic value, GameEngine.Charateristic parent, GameEngine.Charateristic champion)
     {
-        Name.text = value.Name;
+        Name.text = value.CharateristicType.ToString();
         Value.text = value.Value.ToString();
         ParentValue.text = parent.Value.ToString();
         ChampionValue.text = champion == null ? string.Empty : champion.Value.ToString();
