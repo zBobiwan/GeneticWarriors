@@ -6,18 +6,28 @@ using UnityEngine.UI;
 
 public class ChararcterGui : MonoBehaviour
 {
+    public enum Action
+    {
+        ShowDetail,
+        UpgradeNurcery,
+        UpgradeHouse,
+    }
+
+    public Action CurrentAction;
     public MainGui Gui;
     public GameEngine.Guy Guy;
     public Button Button;
     public Text Name;
     public int Id;
     public Text Average;
+    public Image Bar;
 
-    public void Refresh(MainGui gui, GameEngine.Guy guy, GameEngine.Guy current)
+    public void RefreshGuy(MainGui gui, GameEngine.Guy guy, GameEngine.Guy current)
     {
+        Bar.gameObject.SetActive(false);
         Gui = gui;
         Guy = guy;
-
+        CurrentAction = Action.ShowDetail;
         if (guy != null && guy.Id != 0)
         {
             Id = guy.Id;
@@ -43,8 +53,33 @@ public class ChararcterGui : MonoBehaviour
         Button.interactable = guy != null && guy.Id != 0;
     }
 
+    public void RefreshAction(MainGui mainGui, string text, Action action, float completion)
+    {
+        Bar.gameObject.SetActive(completion > 0);
+        Bar.fillAmount = 1.0f - completion;
+        Gui = mainGui;
+        CurrentAction = action;
+        Name.text = text;
+        Average.text = string.Empty;
+        this.GetComponent<Image>().color = Color.white;
+        Button.interactable = true;
+    }
+
     public void SelectGuy()
     {
-        Gui.Show(Guy);
+        if (CurrentAction == Action.ShowDetail)
+        {
+            Gui.Show(Guy);
+        }
+        else if (CurrentAction == Action.UpgradeHouse)
+        {
+            Gui.Engine.Houses[Gui.HouseIndex].BuildHouseCounter += Gui.Engine.Houses[Gui.HouseIndex].NextHousePrice;
+        }
+        else if (CurrentAction == Action.UpgradeNurcery)
+        {
+            Gui.Engine.Houses[Gui.HouseIndex].BuildNurceryCounter += Gui.Engine.Houses[Gui.HouseIndex].NextNurceryPrice;
+        }
     }
+
+
 }

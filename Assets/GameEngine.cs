@@ -49,14 +49,14 @@ public class GameEngine : MonoBehaviour
 
     public void Init()
     {
-       Houses.Add(new House(House.HouseType.Training, "Bob", 0));
-       FuturHouses.Add(new House(House.HouseType.Building, "Billy", 10));
-       FuturHouses.Add(new House(House.HouseType.Research, "Johnny", 10));
-       FuturHouses.Add(new House(House.HouseType.Medecine, "Mike", 10));
-       FuturHouses.Add(new House(House.HouseType.Crafting, "James", 10));
-       FuturHouses.Add(new House(House.HouseType.Farming, "Dylan", 10));
-       FuturHouses.Add(new House(House.HouseType.Enconomy, "Kevin", 10));
-       FuturHouses.Add(new House(House.HouseType.Marketing, "Nick", 10));
+       Houses.Add(new House(House.HouseType.Training, "Bob", 0, 1));
+       FuturHouses.Add(new House(House.HouseType.Building, "Billy", 60, 2));
+       FuturHouses.Add(new House(House.HouseType.Research, "Johnny", 150, 4));
+       FuturHouses.Add(new House(House.HouseType.Medecine, "Mike", 250, 7));
+       FuturHouses.Add(new House(House.HouseType.Crafting, "James", 1000, 11));
+       FuturHouses.Add(new House(House.HouseType.Farming, "Dylan", 3000, 16));
+       FuturHouses.Add(new House(House.HouseType.Enconomy, "Kevin", 10000, 22));
+       FuturHouses.Add(new House(House.HouseType.Marketing, "Nick", 50000, 29));
        Resources.Add(new Resource(Resource.RessourceType.Gold));
     }
 
@@ -70,6 +70,11 @@ public class GameEngine : MonoBehaviour
     public Resource GetResource(Resource.RessourceType type)
     {
         return Resources.First(x => x.Type == type);
+    }
+
+    public bool IsHouseBuild(House.HouseType houseType)
+    {
+        return Houses.Exists(x => x.Type == houseType);
     }
 
     [Serializable]
@@ -97,7 +102,10 @@ public class GameEngine : MonoBehaviour
         public string FamillyName;
 
         public int HouseSize = 2;
+        public int BuildHouseCounter = 0;
         public int NurcerySize = 1;
+        public int BuildNurceryCounter = 0;
+
         public int IdCounter = 1;
 
         public int BirthCounter = 0;
@@ -107,14 +115,25 @@ public class GameEngine : MonoBehaviour
         public int ChampionActionTime = 30;
 
         public int Price;
+        public float PriceMultiplier;
 
-        public House(HouseType type, string familly, int price)
+        public House(HouseType type, string familly, int price, float priceMultiplier)
         {
             this.Type = type;
             this.FamillyName = familly;
             this.Price = price;
             Dad = new Guy(FamillyName, IdCounter++, true);
             Mom = new Guy(FamillyName, IdCounter++, false);
+        }
+
+        public int NextHousePrice
+        {
+            get { return (int) (HouseSize*HouseSize*100*PriceMultiplier); }
+        }
+
+        public int NextNurceryPrice
+        {
+            get { return (int) (HouseSize * HouseSize * 100 * PriceMultiplier); }
         }
 
         public void PromoteToParent(Guy guy)
@@ -181,6 +200,35 @@ public class GameEngine : MonoBehaviour
             {
                 engine.GetResource(Resource.RessourceType.Gold).Add(Champion.GetCharateristic(Charateristic.Type.Strenght) / 10);
             }
+            if (Type == HouseType.Building)
+            {
+                int buildPower =
+                    GetMembers(addChampion: true, addHouse: true)
+                        .Sum(x => x.GetCharateristic(Charateristic.Type.Dexterity));
+
+                foreach (House house in engine.Houses)
+                {
+                    if (house.BuildHouseCounter > 0)
+                    {
+                        house.BuildHouseCounter -= buildPower;
+                        if (house.BuildHouseCounter <= 0)
+                        {
+                            house.BuildHouseCounter = 0;
+                            house.HouseSize++;
+                        }
+                    }
+
+                    if (house.BuildNurceryCounter > 0)
+                    {
+                        house.BuildNurceryCounter -= buildPower;
+                        if (house.BuildNurceryCounter <= 0)
+                        {
+                            house.BuildNurceryCounter = 0;
+                            house.NurcerySize++;
+                        }
+                    }
+                }
+            }
         }
 
         public void NewGeneration()
@@ -244,6 +292,11 @@ public class GameEngine : MonoBehaviour
             return GetMembers(addParent: true, addChampion: true, addHouse: true)
                 .Sum(x => x.GetCharateristic(Charateristic.Type.Strenght));
         }
+
+        public bool IsBuilding()
+        {
+            return BuildHouseCounter != 0 || BuildNurceryCounter != 0;
+        }
     }
 
     [Serializable]
@@ -267,7 +320,7 @@ public class GameEngine : MonoBehaviour
             Charateristics[4] = new Charateristic(Charateristic.Type.Intelligence, 10);
             Charateristics[5] = new Charateristic(Charateristic.Type.Wits, 10);
             Charateristics[6] = new Charateristic(Charateristic.Type.Mental, 10);
-            Charateristics[7] = new Charateristic(Charateristic.Type.Mental, 10);
+            Charateristics[7] = new Charateristic(Charateristic.Type.Charisme, 10);
         }
 
         public double Average
@@ -336,7 +389,7 @@ public class GameEngine : MonoBehaviour
 
         public void Remove(int value)
         {
-            Value += value;
+            Value -= value;
             if (Value < 0)
             {
                 Value = 0;

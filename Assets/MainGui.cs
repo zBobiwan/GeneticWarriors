@@ -19,6 +19,9 @@ public class MainGui : MonoBehaviour
         public Color Best;
         public Color Worst;
 
+        public Color[] HouseColor;
+
+
         public Color IsBetterColor(int value1, int value2, Color baseColor)
         {
             if (value1 > value2)
@@ -64,6 +67,7 @@ public class MainGui : MonoBehaviour
     public Button PromoteChampion;
     public Button PromoteHouse;
     public Button Sacrifice;
+    public Button[] TransfertButtons;
 
     public ResourceGui[] Resources;
 
@@ -87,6 +91,7 @@ public class MainGui : MonoBehaviour
 
     public void Refresh()
     {
+        GetComponent<Image>().color = GameColors.HouseColor[HouseIndex];
         GameEngine.House house = Engine.Houses[HouseIndex];
         RefreshHouses();
         RefreshResources();
@@ -129,6 +134,32 @@ public class MainGui : MonoBehaviour
             PromoteParent.GetComponentInChildren<Text>().text = Guy.Man ? "Promote Dad" : "Promote Mom";
             Sacrifice.interactable = Guy != house.Dad && Guy != house.Mom && Guy != house.Champion;
             PromoteHouse.interactable = Guy != house.Dad && Guy != house.Mom && Guy != house.Champion && house.HouseGuys.Count < house.HouseSize && house.Nurcery.Contains(Guy);
+
+            for (int index = 0; index < this.Tabs.Length; index++)
+            {
+                if (index == HouseIndex)
+                {
+                    TransfertButtons[index].GetComponent<Button>().interactable = false;
+                }
+                else
+                {
+                    TransfertButtons[index].GetComponent<Button>().interactable = Guy != house.Dad && Guy != house.Mom && Guy != house.Champion;
+                }
+
+                if (index < Engine.Houses.Count)
+                {
+                    TransfertButtons[index].GetComponent<Button>().interactable &=
+                        Engine.Houses[index].HouseGuys.Count < Engine.Houses[index].HouseSize;
+                    TransfertButtons[index].GetComponentInChildren<Text>().text = "Transfert to " +
+                                                                              Engine.Houses[index].Type.ToString();
+
+                    TransfertButtons[index].gameObject.SetActive(true);
+                }
+                else
+                {
+                    TransfertButtons[index].gameObject.SetActive(false);
+                }
+            }
         }
     }
 
@@ -140,21 +171,37 @@ public class MainGui : MonoBehaviour
             guy.gameObject.SetActive(index < house.NurcerySize);
             if (index < house.Nurcery.Count)
             {
-                guy.Refresh(this, house.Nurcery[index], Guy);
+                guy.RefreshGuy(this, house.Nurcery[index], Guy);
+            }
+            else if (index == house.NurcerySize && Engine.IsHouseBuild(GameEngine.House.HouseType.Building))
+            {
+                if (house.BuildNurceryCounter != 0)
+                {
+                    guy.RefreshAction(this, "Building", ChararcterGui.Action.UpgradeHouse, house.BuildNurceryCounter / (float)house.NextNurceryPrice);
+                }
+                else
+                {
+                    guy.RefreshAction(this, "Build " + house.NextNurceryPrice + " BP", ChararcterGui.Action.UpgradeNurcery, 0);
+                    if (Engine.Houses.Exists(x => x.IsBuilding()))
+                    {
+                        guy.Button.interactable = false;
+                    }
+                }
+                guy.gameObject.SetActive(true);
             }
             else
             {
-                guy.Refresh(this, null, Guy);
+                guy.RefreshGuy(this, null, Guy);
             }
         }
     }
 
     private void RefreshParent(GameEngine.House house)
     {
-        Dad.Refresh(this, house.Dad, Guy);
-        Mom.Refresh(this, house.Mom, Guy);
+        Dad.RefreshGuy(this, house.Dad, Guy);
+        Mom.RefreshGuy(this, house.Mom, Guy);
 
-        ChampionGuy.Refresh(this, house.Champion, Guy);
+        ChampionGuy.RefreshGuy(this, house.Champion, Guy);
         
     }
 
@@ -166,11 +213,27 @@ public class MainGui : MonoBehaviour
             guy.gameObject.SetActive(index < house.HouseSize);
             if (index < house.HouseGuys.Count)
             {
-                guy.Refresh(this, house.HouseGuys[index], Guy);
+                guy.RefreshGuy(this, house.HouseGuys[index], Guy);
+            }
+            else if (index == house.HouseSize && Engine.IsHouseBuild(GameEngine.House.HouseType.Building))
+            {
+                if (house.BuildHouseCounter != 0)
+                {
+                    guy.RefreshAction(this, "Building", ChararcterGui.Action.UpgradeHouse, house.BuildHouseCounter / (float)house.NextHousePrice);
+                }
+                else
+                {
+                    guy.RefreshAction(this, "Build " + house.NextHousePrice + " BP", ChararcterGui.Action.UpgradeHouse, 0);
+                    if (Engine.Houses.Exists(x => x.IsBuilding()))
+                    {
+                        guy.Button.interactable = false;
+                    }
+                }
+                guy.gameObject.SetActive(true);
             }
             else
             {
-                guy.Refresh(this, null, Guy);
+                guy.RefreshGuy(this, null, Guy);
             }
         }
     }
@@ -181,6 +244,7 @@ public class MainGui : MonoBehaviour
         for (int index = 0; index < Tabs.Length; index++)
         {
             Button button = Tabs[index].gameObject.GetComponent<Button>();
+            button.GetComponent<Image>().color = GameColors.HouseColor[index];
             if (index < Engine.Houses.Count)
             {
                 button.GetComponentInChildren<Text>().text = Engine.Houses[index].Type.ToString();
@@ -232,6 +296,14 @@ public class MainGui : MonoBehaviour
         Refresh();
     }
 
+    public void TransfertTo(int house)
+    {
+        Engine.Houses[HouseIndex].HouseGuys.Remove(Guy);
+        Engine.Houses[HouseIndex].Nurcery.Remove(Guy);
+        Engine.Houses[house].HouseGuys.Add(Guy);
+        Guy = null;
+        Refresh();
+    }
 
     public void NewGeneration()
     {
