@@ -40,7 +40,7 @@ public class MainGui : MonoBehaviour
     public int HouseIndex;
     public GameEngine Engine;
     public GameEngine.Guy Guy;
-    public Button[] Tabs;
+    public HouseTabGui[] Tabs;
     public GameObject Parent;
     public Image ParentBar;
     
@@ -180,17 +180,17 @@ public class MainGui : MonoBehaviour
         
         for (int index = 0; index < Tabs.Length; index++)
         {
-            Button button = Tabs[index];
+            Button button = Tabs[index].gameObject.GetComponent<Button>();
             if (index < Engine.Houses.Count)
             {
-                button.GetComponentInChildren<Text>().text = Engine.Houses[index].Name;
+                button.GetComponentInChildren<Text>().text = Engine.Houses[index].Type.ToString();
                 button.interactable = index != HouseIndex;
                 button.gameObject.SetActive(true);
             }
-            else if (index == Engine.Houses.Count && index != 7)
+            else if (index == Engine.Houses.Count)
             {
-                button.GetComponentInChildren<Text>().text = "Buy for "+index*60+" Gold";
-                button.interactable = Engine.GetResource(GameEngine.Resource.RessourceType.Gold).Value >= 60; 
+                button.GetComponentInChildren<Text>().text = "Buy for "+ Engine.FuturHouses[0].Price + " Gold";
+                button.interactable = Engine.GetResource(GameEngine.Resource.RessourceType.Gold).Value >= Engine.FuturHouses[0].Price; 
                 button.gameObject.SetActive(true);
             }
             else
@@ -245,6 +245,8 @@ public class MainGui : MonoBehaviour
         {
             Engine.CreateNextHouse();
         }
+
+        Guy = null;
 
         HouseIndex = index;
     }

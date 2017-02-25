@@ -9,9 +9,10 @@ public class GameEngine : MonoBehaviour
 
     public MainGui Gui;
     public List<House> Houses = new List<House>();
+    public List<House> FuturHouses = new List<House>();
     public List<Resource> Resources = new List<Resource>();
     public float CurrentTick;
-    public float TickTime = 1;
+    public float TickTime = 0.1f;
 
 	// Use this for initialization
 	void Start ()
@@ -48,7 +49,14 @@ public class GameEngine : MonoBehaviour
 
     public void Init()
     {
-       Houses.Add(new House(House.HouseType.Training.ToString(), "Bob"));
+       Houses.Add(new House(House.HouseType.Training, "Bob", 0));
+       FuturHouses.Add(new House(House.HouseType.Building, "Billy", 10));
+       FuturHouses.Add(new House(House.HouseType.Research, "Johnny", 10));
+       FuturHouses.Add(new House(House.HouseType.Medecine, "Mike", 10));
+       FuturHouses.Add(new House(House.HouseType.Crafting, "James", 10));
+       FuturHouses.Add(new House(House.HouseType.Farming, "Dylan", 10));
+       FuturHouses.Add(new House(House.HouseType.Enconomy, "Kevin", 10));
+       FuturHouses.Add(new House(House.HouseType.Marketing, "Nick", 10));
        Resources.Add(new Resource(Resource.RessourceType.Gold));
     }
 
@@ -85,7 +93,7 @@ public class GameEngine : MonoBehaviour
         public Guy Champion;
         public List<Guy> Nurcery = new List<Guy>();
         public List<Guy> HouseGuys = new List<Guy>();
-        public string Name;
+        public HouseType Type;
         public string FamillyName;
 
         public int HouseSize = 2;
@@ -98,10 +106,13 @@ public class GameEngine : MonoBehaviour
         public int ChampionCounter = 0;
         public int ChampionActionTime = 30;
 
-        public House(string name, string familly)
+        public int Price;
+
+        public House(HouseType type, string familly, int price)
         {
-            this.Name = name;
+            this.Type = type;
             this.FamillyName = familly;
+            this.Price = price;
             Dad = new Guy(FamillyName, IdCounter++, true);
             Mom = new Guy(FamillyName, IdCounter++, false);
         }
@@ -166,7 +177,7 @@ public class GameEngine : MonoBehaviour
 
         private void DoChampionAction(GameEngine engine)
         {
-            if (Name == House.HouseType.Training.ToString())
+            if (Type == House.HouseType.Training)
             {
                 engine.GetResource(Resource.RessourceType.Gold).Add(Champion.GetCharateristic(Charateristic.Type.Strenght) / 10);
             }
@@ -322,13 +333,25 @@ public class GameEngine : MonoBehaviour
                 Value = Max;
             }
         }
+
+        public void Remove(int value)
+        {
+            Value += value;
+            if (Value < 0)
+            {
+                Value = 0;
+            }
+        }
     }
 
     public void CreateNextHouse()
     {
-        if (Houses.Count == 1)
+        if (FuturHouses.Count > 0)
         {
-            Houses.Add(new House(House.HouseType.Building.ToString(), "Billy"));
+            House house = FuturHouses.First();
+            this.GetResource(Resource.RessourceType.Gold).Remove(house.Price);
+            Houses.Add(house);
+            FuturHouses.RemoveAt(0);
         }
     }
 }
