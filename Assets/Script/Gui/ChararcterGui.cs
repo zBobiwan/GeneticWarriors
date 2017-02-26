@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Assets.Script.Engine;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,14 +16,14 @@ public class ChararcterGui : MonoBehaviour
 
     public Action CurrentAction;
     public MainGui Gui;
-    public GameEngine.Guy Guy;
+    public Guy Guy;
     public Button Button;
     public Text Name;
     public int Id;
     public Text Average;
     public Image Bar;
 
-    public void RefreshGuy(MainGui gui, GameEngine.Guy guy, GameEngine.Guy current)
+    public void RefreshGuy(MainGui gui, Guy guy, Guy current)
     {
         Bar.gameObject.SetActive(false);
         Gui = gui;

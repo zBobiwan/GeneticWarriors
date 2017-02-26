@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Assets.Script.Engine;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +12,7 @@ public class CharateristicGui : MonoBehaviour
     public Text ChampionValue;
 
 
-    public void SetValue(MainGui gui, GameEngine.Charateristic value, GameEngine.Charateristic parent, GameEngine.Charateristic champion)
+    public void SetValue(MainGui gui, Charateristic value, Charateristic parent, Charateristic champion)
     {
         Name.text = value.CharateristicType.ToString();
         Value.text = value.Value.ToString();
