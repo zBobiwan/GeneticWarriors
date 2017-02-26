@@ -15,7 +15,7 @@ namespace Assets.Script.Engine
         public List<House> FuturHouses = new List<House>();
         public List<Resource> Resources = new List<Resource>();
         public float CurrentTick;
-        public float TickTime = 0.1f;
+        public float TickTime = 0.5f;
 
         // Update is called once per frame
         void Update()
@@ -48,14 +48,14 @@ namespace Assets.Script.Engine
         public void Init()
         {
             CurrentTick = 0;
-            Houses.Add(new House(House.HouseType.Training, "Bob", 0, 1));
-            FuturHouses.Add(new House(House.HouseType.Building, "Billy", 60, 2));
-            FuturHouses.Add(new House(House.HouseType.Research, "Johnny", 150, 4));
-            FuturHouses.Add(new House(House.HouseType.Medecine, "Mike", 250, 7));
-            FuturHouses.Add(new House(House.HouseType.Crafting, "James", 1000, 11));
-            FuturHouses.Add(new House(House.HouseType.Farming, "Dylan", 3000, 16));
-            FuturHouses.Add(new House(House.HouseType.Enconomy, "Kevin", 10000, 22));
-            FuturHouses.Add(new House(House.HouseType.Marketing, "Nick", 50000, 29));
+            Houses.Add(new House(House.HouseType.Training, "Bob",1));
+            FuturHouses.Add(new House(House.HouseType.Building, "Billy",2));
+            FuturHouses.Add(new House(House.HouseType.Research, "Johnny",3));
+            FuturHouses.Add(new House(House.HouseType.Medecine, "Mike", 4));
+            FuturHouses.Add(new House(House.HouseType.Crafting, "James", 5));
+            FuturHouses.Add(new House(House.HouseType.Farming, "Dylan", 6));
+            FuturHouses.Add(new House(House.HouseType.Enconomy, "Kevin", 7));
+            FuturHouses.Add(new House(House.HouseType.Marketing, "Nick", 8));
             Resources.Add(new Resource(Resource.RessourceType.Gold));
         }
 

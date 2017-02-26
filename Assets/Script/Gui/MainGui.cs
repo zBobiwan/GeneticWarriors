@@ -42,6 +42,7 @@ public class MainGui : MonoBehaviour
         }
     }
 
+    public bool Restart;
     public Colors GameColors;
     public int HouseIndex;
     public GameEngine Engine;
@@ -96,6 +97,12 @@ public class MainGui : MonoBehaviour
 
     public void Update()
     {
+        if (Restart)
+        {
+            Restart = false;
+            PlayerPrefs.DeleteKey("save");
+            Start();
+        }
         Engine.Tick();
         House house = Engine.Houses[HouseIndex];
         ParentBar.fillAmount = (float)house.BirthCounter / (float)house.BirthTime;
@@ -261,8 +268,10 @@ public class MainGui : MonoBehaviour
             tabGui.GetComponent<Image>().color = GameColors.HouseColor[index];
             if (index < Engine.Houses.Count)
             {
-                tabGui.Title.text = Engine.Houses[index].Type.ToString();
+                House house = Engine.Houses[index];
+                tabGui.Title.text = house.Type.ToString();
                 tabGui.GetComponent<Button>().interactable = index != HouseIndex;
+                tabGui.Power.text = "" + house.Power + " power";
                 tabGui.gameObject.SetActive(true);
             }
             else if (index == Engine.Houses.Count)
@@ -270,12 +279,13 @@ public class MainGui : MonoBehaviour
                 tabGui.Title.text = "Buy for "+ Engine.FuturHouses[0].Price + " Gold";
                 tabGui.GetComponent<Button>().interactable = Engine.GetResource(Resource.RessourceType.Gold).Value >= Engine.FuturHouses[0].Price; 
                 tabGui.gameObject.SetActive(true);
+                tabGui.Power.text = String.Empty;
             }
             else
             {
                 tabGui.gameObject.SetActive(false);
             }
-            tabGui.Power.text = String.Empty;
+            
         }
     }
 

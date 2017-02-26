@@ -17,8 +17,25 @@ public class CharateristicGui : MonoBehaviour
         Name.text = value.CharateristicType.ToString();
         Value.text = value.Value.ToString();
         ParentValue.text = parent.Value.ToString();
-        ChampionValue.text = champion == null ? string.Empty : champion.Value.ToString();
-        ParentValue.color = gui.GameColors.IsBetterColor(parent.Value, value.Value, Color.black);
-        ChampionValue.color = champion != null ? gui.GameColors.IsBetterColor(champion.Value, value.Value, Color.black) : Color.black;
+        int championValue = champion == null ? 0 : champion.Value;
+        ChampionValue.text = champion == null ? string.Empty : championValue.ToString();
+        if (value.Value > parent.Value || (value.Value > championValue && championValue != 0))
+        {
+            Value.color = gui.GameColors.Best;
+            ParentValue.color = value.Value > parent.Value ? gui.GameColors.Worst : Color.black;
+            ChampionValue.color = value.Value > championValue ? gui.GameColors.Worst : Color.black;
+        }
+        else if (value.Value < parent.Value || (value.Value < championValue && championValue != 0))
+        {
+            Value.color = gui.GameColors.Worst;
+            ParentValue.color = value.Value < parent.Value ? gui.GameColors.Best : Color.black;
+            ChampionValue.color = value.Value < championValue ? gui.GameColors.Best : Color.black;
+        }
+        else
+        {
+            Value.color = Color.black;
+            ParentValue.color = Color.black;
+            ChampionValue.color = Color.black;
+        }
     }
 }

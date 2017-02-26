@@ -42,18 +42,30 @@ namespace Assets.Script.Engine
         public int ChampionCounter = 0;
         public int ChampionActionTime = 30;
 
-        public int Price;
-        public float PriceMultiplier;
+        public int Index;
+
+        public int Price
+        {
+            get { return (int)(Math.Pow(1.9f, Index*1.5)*100); }
+        }
+
+        public int PriceMultiplier
+        {
+            get { return (int) Math.Pow(2, Index); }
+        }
+
+        public int Power;
+        public float HouseRatio = 0.1f;
 
         private House()
         {
         }
 
-        public House(HouseType type, string familly, int price, float priceMultiplier)
+        public House(HouseType type, string familly, int index)
         {
             this.Type = type;
             this.FamillyName = familly;
-            this.Price = price;
+            this.Index = index;
             Dad = new Guy(FamillyName, IdCounter++, true);
             Mom = new Guy(FamillyName, IdCounter++, false);
         }
@@ -103,6 +115,8 @@ namespace Assets.Script.Engine
 
         public void Tick(GameEngine engine)
         {
+            Power = ComputePower();
+
             if (Nurcery.Count < NurcerySize)
             {
                 ++BirthCounter;
@@ -124,24 +138,36 @@ namespace Assets.Script.Engine
             }
         }
 
+        private int ComputePower()
+        {
+            if (Type == HouseType.Training)
+            {
+                return (int)GetMembers(addChampion: true, addHouse: true)
+                    .Sum(x => x.GetCharateristic(Charateristic.Type.Strenght)*(x == Champion ? 1.0f : HouseRatio));
+            }
+            else if (Type == HouseType.Building)
+            {
+                return (int)GetMembers(addChampion: true, addHouse: true)
+                    .Sum(x => x.GetCharateristic(Charateristic.Type.Dexterity) * (x == Champion ? 1.0f : HouseRatio));
+            }
+
+            return 0;
+        }
+
         private void DoChampionAction(GameEngine engine)
         {
             if (Type == House.HouseType.Training)
             {
                 engine.GetResource(Resource.RessourceType.Gold)
-                    .Add(Champion.GetCharateristic(Charateristic.Type.Strenght)/10);
+                    .Add(Power);
             }
             if (Type == HouseType.Building)
             {
-                int buildPower =
-                    GetMembers(addChampion: true, addHouse: true)
-                        .Sum(x => x.GetCharateristic(Charateristic.Type.Dexterity));
-
                 foreach (House house in engine.Houses)
                 {
                     if (house.BuildHouseCounter > 0)
                     {
-                        house.BuildHouseCounter -= buildPower;
+                        house.BuildHouseCounter -= Power;
                         if (house.BuildHouseCounter <= 0)
                         {
                             house.BuildHouseCounter = 0;
@@ -151,7 +177,7 @@ namespace Assets.Script.Engine
 
                     if (house.BuildNurceryCounter > 0)
                     {
-                        house.BuildNurceryCounter -= buildPower;
+                        house.BuildNurceryCounter -= Power;
                         if (house.BuildNurceryCounter <= 0)
                         {
                             house.BuildNurceryCounter = 0;
@@ -223,7 +249,7 @@ namespace Assets.Script.Engine
         public int GetMaxGold()
         {
             return GetMembers(addParent: true, addChampion: true, addHouse: true)
-                .Sum(x => x.GetCharateristic(Charateristic.Type.Strenght));
+                .Sum(x => x.GetCharateristic(Charateristic.Type.Size)*10);
         }
 
         public bool IsBuilding()
