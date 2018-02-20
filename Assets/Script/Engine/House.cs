@@ -46,7 +46,7 @@ namespace Assets.Script.Engine
 
         public int Price
         {
-            get { return (int)(Math.Pow(1.9f, Index*1.5)*100); }
+            get { return (int)(Math.Pow(1.9f, Index*1.5)*10); }
         }
 
         public int PriceMultiplier
@@ -77,7 +77,7 @@ namespace Assets.Script.Engine
 
         public int NextNurceryPrice
         {
-            get { return (int) (HouseSize*HouseSize*100*PriceMultiplier); }
+            get { return (int) (NurcerySize* NurcerySize * 100*PriceMultiplier); }
         }
 
         public void PromoteToParent(Guy guy)
@@ -249,7 +249,7 @@ namespace Assets.Script.Engine
         public int GetMaxGold()
         {
             return GetMembers(addParent: true, addChampion: true, addHouse: true)
-                .Sum(x => x.GetCharateristic(Charateristic.Type.Size)*10);
+                .Sum(x => x.GetCharateristic(Charateristic.Type.Size)*100);
         }
 
         public bool IsBuilding()

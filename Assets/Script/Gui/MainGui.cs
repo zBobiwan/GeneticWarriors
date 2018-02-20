@@ -199,6 +199,7 @@ public class MainGui : MonoBehaviour
                 if (house.BuildNurceryCounter != 0)
                 {
                     guy.RefreshAction(this, "Building", ChararcterGui.Action.UpgradeHouse, house.BuildNurceryCounter / (float)house.NextNurceryPrice);
+                    guy.Button.interactable = false;
                 }
                 else
                 {
@@ -241,6 +242,7 @@ public class MainGui : MonoBehaviour
                 if (house.BuildHouseCounter != 0)
                 {
                     guy.RefreshAction(this, "Building", ChararcterGui.Action.UpgradeHouse, house.BuildHouseCounter / (float)house.NextHousePrice);
+                    guy.Button.interactable = false;
                 }
                 else
                 {
@@ -346,5 +348,14 @@ public class MainGui : MonoBehaviour
         Guy = null;
 
         HouseIndex = index;
+    }
+
+    public void Cancel()
+    {
+        foreach (House house in Engine.Houses)
+        {
+            house.BuildHouseCounter = 0;
+            house.BuildNurceryCounter = 0;
+        }
     }
 }

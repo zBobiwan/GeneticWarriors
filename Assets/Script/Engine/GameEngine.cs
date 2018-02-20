@@ -15,7 +15,7 @@ namespace Assets.Script.Engine
         public List<House> FuturHouses = new List<House>();
         public List<Resource> Resources = new List<Resource>();
         public float CurrentTick;
-        public float TickTime = 0.5f;
+        public float TickTime = 0.01f;
 
         // Update is called once per frame
         void Update()
